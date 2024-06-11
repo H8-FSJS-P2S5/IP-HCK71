@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      DragonBall.belongsTo(models.MyCharacter, { foreignKey: "DragonBallId" });
     }
   }
   DragonBall.init(
