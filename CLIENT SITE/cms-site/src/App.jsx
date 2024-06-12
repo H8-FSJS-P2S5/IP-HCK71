@@ -8,9 +8,15 @@ import {
 import "./App.css";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import HomePage from "./pages/HomePage";
 
 function App() {
   const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <HomePage />,
+    },
+
     {
       path: "/register",
       element: <Register />,

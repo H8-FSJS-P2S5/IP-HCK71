@@ -1,7 +1,47 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import img from "../assets/goku.png";
+import { useState } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // Define errorMessage state
+
+  const handleOnSubmit = async (event) => {
+    event.preventDefault();
+    console.log({ email, password });
+
+    try {
+      const { data } = await axios.post("http://localhost:3000/login", {
+        email,
+        password,
+      });
+      localStorage.setItem("access_token", data.access_token);
+      navigate("/");
+    } catch (error) {
+      setErrorMessage(error.response.data.message); // Set errorMessage state on error
+      console.log(error);
+    }
+  };
+
+  async function handleCredentialResponse(response) {
+    try {
+      const { data } = await axios({
+        method: "post",
+        url: "http://localhost:3000/google-login",
+        headers: { google_token: response.credential },
+      });
+      console.log(data);
+      localStorage.setItem("access_token", data.access_token);
+      navigate("/");
+    } catch (error) {
+      toast(error.response.data);
+    }
+  }
+
   return (
     <>
       <div className="flex min-h-screen bg-white">
@@ -15,10 +55,20 @@ export default function Login() {
               src="https://images.tokopedia.net/img/cache/700/product-1/2020/1/16/52648384/52648384_84dd35b5-ce63-420f-9200-27c8de064459_800_800.jpg"
               alt="Your Company"
             />
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+            <h1 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
               Sign in to your account
-            </h2>
-            <form className="mt-8 space-y-6" action="#" method="POST">
+            </h1>
+            {errorMessage && (
+              <div className="mt-2 text-center text-red-500">
+                {errorMessage}
+              </div>
+            )}
+            <form
+              onSubmit={handleOnSubmit}
+              className="mt-8 space-y-6"
+              action="#"
+              method="POST"
+            >
               <div></div>
               <div>
                 <label
@@ -35,6 +85,10 @@ export default function Login() {
                     autoComplete="email"
                     required
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                    }}
                   />
                 </div>
               </div>
@@ -55,6 +109,10 @@ export default function Login() {
                     autoComplete="current-password"
                     required
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                    }}
                   />
                 </div>
               </div>
