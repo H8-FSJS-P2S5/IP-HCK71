@@ -4,8 +4,10 @@ const port = 3000;
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
-const { User } = require("./models");
+const { User, DragonBall } = require("./models");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -80,6 +82,61 @@ app.post("/login", async (req, res) => {
     res.status(500).json({
       message: "Internal server error",
     });
+  }
+});
+
+async function authentication(req, res, next) {
+  try {
+    const bearerToken = req.headers.authorization;
+    if (!bearerToken) {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    }
+
+    const token = bearerToken.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    }
+    const payload = jwt.verify(token, "secret");
+    const user = await User.findByPk(payload.id);
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    } else {
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+}
+
+app.get("/dragonBalls", authentication, async (req, res) => {
+  try {
+    const user = req.user;
+    const { data } = await axios({
+      where: {
+        UserId: user.id,
+      },
+      method: "GET",
+      url: "https://dragonball-api.com/api/characters",
+    });
+    // console.log(data.items);
+    res.json(data.items);
+  } catch (error) {
+    console.log(error);
   }
 });
 
