@@ -4,5 +4,7 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [require("@tailwindcss/forms", "@tailwindcss/aspect-ratio")],
+  plugins: [
+    require("@tailwindcss/forms", "@tailwindcss/aspect-ratio", "daisyui"),
+  ],
 };
