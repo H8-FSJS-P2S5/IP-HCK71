@@ -22,10 +22,8 @@ export default function LandingPage() {
       <section className="flex justify-between items-center">
         {" "}
         <div className="text-white ml-8 mt-32 mb-32 leading-normal max-w-lg text-left">
-          <h1 className="text-6xl mb-6 playfair-display-regular ">
-            Discover your Travel
-          </h1>
-          <p>Beautiful Destination</p>
+          <h1 className="text-6xl mb-6 playfair-display-regular ">Heros</h1>
+          <p>BIG HEROES</p>
 
           <Link
             to="/detail/:id"
