@@ -136,21 +136,26 @@ async function authentication(req, res, next) {
 }
 
 app.get("/dragonBalls", authentication, async (req, res) => {
-  try {
-    const user = req.user;
-    const { data } = await axios({
-      where: {
-        UserId: user.id,
-      },
-      method: "GET",
-      url: "https://dragonball-api.com/api/characters",
-    });
-    // console.log(data.items);
-    res.status(200).json(data.items);
-  } catch (error) {
-    console.log(error);
-  }
+  const user = req.user;
+  const dragonBalls = await DragonBall.findAll({
+    // where: {
+    //   UserId: user.id,
+    // },
+    attributes: {
+      exclude: ["createdAt", "updatedAt"],
+    },
+  });
+  res.status(200).json(dragonBalls);
 });
+
+// app.get("/dragonBalls", async (req, res) => {
+//   const dragonBalls = await DragonBall.findAll({
+//     attributes: {
+//       exclude: ["createdAt", "updatedAt"],
+//     },
+//   });
+//   res.status(200).json(dragonBalls);
+// });
 
 async function guardAuthorOnly(req, res, next) {
   try {
@@ -189,7 +194,7 @@ app.delete(
           UserId: user.id,
         },
         method: "DELETE",
-        url: "https://dragonball-api.com/api/characters",
+        url: "https://dragonball-api.com/api/characters/delete",
       });
 
       await req.data.items.destroy();
