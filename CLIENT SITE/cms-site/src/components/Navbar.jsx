@@ -18,6 +18,12 @@ export default function Navbar() {
           >
             DRAGON BALL
           </Link>
+          <Link
+            className="bg-gray-800 text-white font-semibold py-2 px-4 rounded m-3 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50"
+            to={"/planets"}
+          >
+            PLANETS DRAGON BALLS
+          </Link>
           <button
             className="bg-gray-800 text-white font-semibold py-2 px-4 rounded m-3 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50"
             onClick={() => {
@@ -27,6 +33,7 @@ export default function Navbar() {
           >
             Logout
           </button>
+          <Link to={"/"}>back</Link>
         </div>
       </nav>
     </>

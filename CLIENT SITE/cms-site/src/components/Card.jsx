@@ -29,7 +29,7 @@ export default function Card(props) {
             Detail
           </Link>
           <Link
-            to="/add"
+            to={`add/${dragonBall.id}`}
             className="text-black hover:text-black shadow-xl bg-black-200 hover:bg-green-200 duration-300 rounded-2xl py-3 px-3 font-medium inline-block mt-5"
           >
             Add

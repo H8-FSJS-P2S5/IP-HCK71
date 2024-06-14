@@ -21,13 +21,13 @@ export default function LandingPage() {
     <>
       <section className="flex justify-between items-center">
         {" "}
-        <div className="text-white ml-8 mt-32 mb-32 leading-normal max-w-lg text-left">
+        <div className="text-black ml-8 mt-32 mb-32 leading-normal max-w-lg text-left">
           <h1 className="text-6xl mb-6 playfair-display-regular ">Heros</h1>
           <p>BIG HEROES</p>
 
           <Link
-            to="/detail/:id"
-            className="shadow-xl bg-purple-600 hover:border-purple-600 duration-300 hover:border hover:bg-transparent rounded-3xl py-3 px-8 font-medium inline-block mr-4 mt-5"
+            to="/ai"
+            className="shadow-xl bg-blue-600 hover:border-blue-600 duration-300 hover:border hover:bg-transparent rounded-3xl py-3 px-8 font-medium inline-block mr-4 mt-5"
           >
             Browse now!
           </Link>

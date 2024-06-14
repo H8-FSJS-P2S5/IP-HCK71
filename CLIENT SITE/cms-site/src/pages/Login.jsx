@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import img from "../assets/goku.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(""); // Define errorMessage state
@@ -38,9 +39,27 @@ export default function Login() {
       localStorage.setItem("access_token", data.access_token);
       navigate("/");
     } catch (error) {
-      toast(error.response.data);
+      console.log(error);
+      Swal.fire(error.response.data);
     }
   }
+
+  function loadGoogleButton() {
+    window.google.accounts.id.initialize({
+      client_id:
+        "147631135896-dmtidb62g15qv7o7t82vfdge48nb878g.apps.googleusercontent.com",
+      callback: handleCredentialResponse,
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById("buttonDiv"),
+      { theme: "outline", size: "large" } // customization attributes
+    );
+    // window.google.accounts.id.prompt(); // also display the One Tap dialog
+  }
+
+  useEffect(() => {
+    loadGoogleButton();
+  }, []);
 
   return (
     <>
@@ -130,7 +149,7 @@ export default function Login() {
                 Or continue with
               </p>
               <div className="mt-3 flex justify-center gap-3">
-                <a
+                {/* <a
                   href="#"
                   className="flex items-center justify-center w-full rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500"
                 >
@@ -157,7 +176,8 @@ export default function Login() {
                     />
                   </svg>
                   Google
-                </a>
+                </a> */}
+                <div id="buttonDiv"></div>
                 <a
                   href="#"
                   className="flex items-center justify-center w-full rounded-md bg-gray-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800"

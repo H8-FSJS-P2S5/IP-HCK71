@@ -1,7 +1,68 @@
 import { Link } from "react-router-dom";
 import img from "../assets/goku.png";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function Register() {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:3000/register", {
+        username: username,
+        email: email,
+        password: password,
+      });
+      navigate("/login");
+      console.log(response);
+    } catch (error) {
+      Swal.fire({
+        title: "Sorry!",
+        text: error.response.data.message,
+        icon: "error",
+      });
+    }
+  };
+
+  async function handleCredentialResponse(response) {
+    try {
+      const { data } = await axios({
+        method: "post",
+        url: "http://localhost:3000/google-login",
+        headers: { google_token: response.credential },
+      });
+      console.log(data);
+      localStorage.setItem("access_token", data.access_token);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      Swal.fire(error.response.data);
+    }
+  }
+
+  function loadGoogleButton() {
+    window.google.accounts.id.initialize({
+      client_id:
+        "147631135896-dmtidb62g15qv7o7t82vfdge48nb878g.apps.googleusercontent.com",
+      callback: handleCredentialResponse,
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById("buttonDiv"),
+      { theme: "outline", size: "large" } // customization attributes
+    );
+    // window.google.accounts.id.prompt(); // also display the One Tap dialog
+  }
+
+  useEffect(() => {
+    loadGoogleButton();
+  }, []);
+
   return (
     <>
       <div className="flex min-h-screen bg-white">
@@ -18,7 +79,12 @@ export default function Register() {
             <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
               Create your account
             </h2>
-            <form className="mt-8 space-y-6" action="#" method="POST">
+            <form
+              onSubmit={handleSubmit}
+              className="mt-8 space-y-6"
+              action="#"
+              method="POST"
+            >
               <div>
                 <label
                   htmlFor="username"
@@ -34,6 +100,8 @@ export default function Register() {
                     autoComplete="username"
                     required
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
               </div>
@@ -52,6 +120,8 @@ export default function Register() {
                     autoComplete="email"
                     required
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -72,6 +142,8 @@ export default function Register() {
                     autoComplete="current-password"
                     required
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
@@ -89,7 +161,7 @@ export default function Register() {
                 Or continue with
               </p>
               <div className="mt-3 flex justify-center gap-3">
-                <a
+                {/* <a
                   href="#"
                   className="flex items-center justify-center w-full rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500"
                 >
@@ -116,7 +188,8 @@ export default function Register() {
                     />
                   </svg>
                   Google
-                </a>
+                </a> */}
+                <div id="buttonDiv"></div>
                 <a
                   href="#"
                   className="flex items-center justify-center w-full rounded-md bg-gray-900 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800"

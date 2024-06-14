@@ -11,6 +11,10 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
 import DetailPage from "./pages/DetailPage";
+import { AiPage } from "./pages/AiPage";
+import Planets from "./pages/Planets";
+
+// import AddMyCharacterPage from "./pages/AddMyCharacterPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -24,6 +28,26 @@ function App() {
         {
           path: "/detail/:id",
           element: <DetailPage />,
+        },
+        {
+          path: "/planets",
+          element: <Planets />,
+        },
+        {
+          // path: "/add/:id",
+          // element: <AddMyCharacterPage />,
+        },
+        {
+          path: "/ai",
+          element: <AiPage />,
+          loader: () => {
+            const isLogin = localStorage.getItem("access_token");
+            if (!isLogin) {
+              throw redirect("/login");
+            } else {
+              return null;
+            }
+          },
         },
       ],
     },
