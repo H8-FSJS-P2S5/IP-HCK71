@@ -14,7 +14,7 @@ import DetailPage from "./pages/DetailPage";
 import { AiPage } from "./pages/AiPage";
 import Planets from "./pages/Planets";
 
-// import AddMyCharacterPage from "./pages/AddMyCharacterPage";
+import AddMyCharacterPage from "./pages/AddMyCharacterPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -34,8 +34,8 @@ function App() {
           element: <Planets />,
         },
         {
-          // path: "/add/:id",
-          // element: <AddMyCharacterPage />,
+          path: "/add/:id",
+          element: <AddMyCharacterPage />,
         },
         {
           path: "/ai",

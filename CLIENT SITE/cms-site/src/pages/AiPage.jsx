@@ -36,7 +36,7 @@ export const AiPage = () => {
   };
 
   const backgroundStyle = {
-    backgroundImage: `url('https://wallpapercave.com/wp/wp5437027.jpg')`,
+    backgroundImage: `url('https://e1.pxfuel.com/desktop-wallpaper/558/131/desktop-wallpaper-dragon-ball-for-dragon-ball-aesthetic-pc.jpg')`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     minHeight: "100vh",

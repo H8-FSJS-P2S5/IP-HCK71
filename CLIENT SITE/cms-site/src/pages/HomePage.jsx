@@ -58,7 +58,10 @@ export default function HomePage() {
         <div className="container  ">
           <div
             className="pr-24 pl-24 pt-0 pb-2  rounded-3xl shadow-xl "
-            style={{ backgroundColor: "black" }}
+            style={{
+              backgroundImage: `url(
+                "https://e7.pngegg.com/pngimages/204/169/png-clipart-paper-silver-blue-metal-texture-blue.png")`,
+            }}
           >
             <div className="flex justify-between items-center mb-10">
               <img
