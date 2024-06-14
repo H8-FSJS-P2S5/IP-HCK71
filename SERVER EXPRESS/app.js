@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -12,11 +12,13 @@ const axios = require("axios");
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const { User, DragonBall } = require("./models");
+const { User, DragonBall, MyCharacter, Planet } = require("./models");
+const { OAuth2Client } = require("google-auth-library");
+const { where } = require("sequelize");
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 // Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 
@@ -29,7 +31,7 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     let { username, email, password } = req.body;
 
     const user = await User.create({
@@ -37,7 +39,7 @@ app.post("/register", async (req, res) => {
       email,
       password,
     });
-    console.log(user);
+    // console.log(user);
 
     res.status(201).json({ message: "Register Success", email: user.email });
   } catch (error) {
@@ -138,9 +140,6 @@ async function authentication(req, res, next) {
 app.get("/dragonBalls", authentication, async (req, res) => {
   const user = req.user;
   const dragonBalls = await DragonBall.findAll({
-    // where: {
-    //   UserId: user.id,
-    // },
     attributes: {
       exclude: ["createdAt", "updatedAt"],
     },
@@ -148,32 +147,93 @@ app.get("/dragonBalls", authentication, async (req, res) => {
   res.status(200).json(dragonBalls);
 });
 
-// app.get("/dragonBalls", async (req, res) => {
-//   const dragonBalls = await DragonBall.findAll({
-//     attributes: {
-//       exclude: ["createdAt", "updatedAt"],
-//     },
-//   });
-//   res.status(200).json(dragonBalls);
-// });
+app.get("/dragonBalls/:id", authentication, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const dragonBall = await DragonBall.findByPk(id, {
+      attributes: {
+        exclude: ["createdAt", "updatedAt"],
+      },
+    });
+
+    if (!dragonBall) {
+      return res.status(404).json({ message: "Dragon Ball not found" });
+    }
+
+    res.status(200).json(dragonBall);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/mc", authentication, async (req, res) => {
+  const UserId = req.user.id;
+  const mc = await MyCharacter.findAll({
+    attributes: {
+      exclude: ["createdAt", "updatedAt"],
+    },
+    where: {
+      UserId,
+    },
+    include: [DragonBall],
+  });
+  res.status(200).json(mc);
+});
+
+app.get("/planets", authentication, async (req, res) => {
+  const user = req.user;
+  const planet = await Planet.findAll({
+    attributes: {
+      exclude: ["createdAt", "updatedAt"],
+    },
+  });
+  res.status(200).json(planet);
+});
+
+app.post("/mc/:id", authentication, async (req, res) => {
+  try {
+    // console.log(req.body);
+    // let { name, ki, maxKi, race, gender, description, image, affiliation } =
+    //   req.body;
+    const user = req.user;
+
+    req.body.UserId = user.id;
+    const myCharacter = await MyCharacter.create({
+      UserId: user.id,
+      DragonBallId: req.params.id,
+    });
+    res.status(201).json(myCharacter);
+  } catch (error) {
+    // console.log(error);
+    if (error.name === "SequelizeValidationError") {
+      res.status(400).json({
+        message: error.errors[0].message,
+      });
+    } else {
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  }
+});
 
 async function guardAuthorOnly(req, res, next) {
   try {
     const user = req.user;
-    const dragonball = await DragonBall.findByPk(req.params.id);
+    const mc = await MyCharacter.findByPk(req.params.id);
 
-    if (!dragonball) {
+    if (!mc) {
       return res.status(404).json({
-        message: "Dragon Ball not found",
+        message: "My Ch..... not found",
       });
     }
-
-    if (dragonball.UserId !== user.id) {
+    // console.log({ user, mc });
+    if (mc.UserId !== user.id) {
       return res.status(403).json({
         message: "You are not authorized",
       });
     }
-    req.dragonBall = dragonball;
+    req.mc = mc;
     next();
   } catch (error) {
     res.status(500).json({
@@ -182,33 +242,54 @@ async function guardAuthorOnly(req, res, next) {
   }
 }
 
-app.delete(
-  "/dragonBalls/:id",
-  authentication,
-  guardAuthorOnly,
-  async (req, res) => {
-    try {
-      const user = req.user;
-      const { data } = await axios({
-        where: {
-          UserId: user.id,
-        },
-        method: "DELETE",
-        url: "https://dragonball-api.com/api/characters/delete",
-      });
-
-      await req.data.items.destroy();
-      res
-        .status(200)
-        .json({ message: "Dragon Ball item has been deleted", data });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: "Internal server error",
-      });
-    }
+app.delete("/mc/:id", authentication, guardAuthorOnly, async (req, res) => {
+  try {
+    // const user = req.user;
+    // const { data } = await axios({
+    //   method: "DELETE",
+    //   url: "https://dragonball-api.com/api/characters/delete",
+    // });
+    // const data
+    await MyCharacter.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+    res
+      .status(200)
+      .json({ message: "My Dragon Ball Character has been deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
-);
+});
+
+app.patch("/mc/:id", authentication, guardAuthorOnly, async (req, res) => {
+  try {
+    let mc = await MyCharacter.findByPk(req.params.id);
+    console.log(mc);
+    await MyCharacter.update(
+      {
+        nickname: req.body.nickname,
+      },
+      {
+        where: {
+          id: req.params.id,
+        },
+      }
+    );
+    res
+      .status(200)
+      .json({ message: "My Dragon Ball Character has been update" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+});
 
 app.get("/pub/dragonBalls", async (req, res) => {
   try {
@@ -219,7 +300,7 @@ app.get("/pub/dragonBalls", async (req, res) => {
     // console.log(data.items);
     res.status(200).json(data.items);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -236,11 +317,11 @@ app.post("/ai", async (req, res, next) => {
       const prompt = question;
 
       const result = await model.generateContent(prompt);
-      console.log(result);
+      // console.log(result);
       const response = await result.response;
       const text = await response.text(); // Menggunakan await untuk mendapatkan teks
 
-      console.log(text);
+      // console.log(text);
       return text;
     }
 
@@ -256,6 +337,46 @@ app.post("/ai", async (req, res, next) => {
   }
 });
 
+app.post("/google-login", async (req, res, next) => {
+  try {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    const { google_token } = req.headers;
+
+    if (!google_token) {
+      return res.status(400).json({ error: "Google token is required" });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: google_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    let user = await User.findOne({ where: { email: payload.email } });
+
+    if (!user) {
+      user = await User.create(
+        {
+          email: payload.email,
+          password: "123456", // Ensure this is a placeholder and implement proper password handling
+        },
+        {
+          hooks: false,
+        }
+      );
+    }
+
+    const access_token = jwt.sign({ id: user.id }, "secret");
+
+    res
+      .status(200)
+      .json({ message: "Google login success", access_token, payload, user });
+  } catch (error) {
+    console.error("Error during Google login:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
